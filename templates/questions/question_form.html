@@ -1,0 +1,25 @@
+{% extends 'base.html' %}
+
+{% block title %}Ask a question{% endblock %}
+
+{% block content %}
+  <header class="page-header">
+    <div>
+      <h1>Ask a question</h1>
+      <p class="muted">A monitor of the subject will claim it and answer you here.</p>
+    </div>
+  </header>
+
+  <div class="card form-card">
+    <div class="card-body">
+      <form method="post" class="form">
+        {% csrf_token %}
+        {{ form.as_div }}
+        <div class="form-actions">
+          <a href="{% url 'questions:list' %}" class="btn btn-ghost">Cancel</a>
+          <button type="submit" class="btn btn-primary">Open question</button>
+        </div>
+      </form>
+    </div>
+  </div>
+{% endblock %}

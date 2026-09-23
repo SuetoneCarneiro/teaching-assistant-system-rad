@@ -3,12 +3,22 @@
 {% block title %}Log in{% endblock %}
 
 {% block content %}
-  {# TODO(Pedro): styled auth card. This is a placeholder. #}
-  <h1>Log in</h1>
-  <form method="post" class="form">
-    {% csrf_token %}
-    {{ form.as_div }}
-    <input type="hidden" name="next" value="{{ next }}">
-    <button type="submit" class="btn btn-primary">Log in</button>
-  </form>
+  <section class="auth">
+    <div class="card">
+      <div class="card-body">
+        <h1>Welcome back</h1>
+        <p class="muted">Log in to ask questions and follow their answers.</p>
+
+        <form method="post" class="form">
+          {% csrf_token %}
+          {{ form.as_div }}
+          <input type="hidden" name="next" value="{{ next }}">
+          <button type="submit" class="btn btn-primary btn-block">Log in</button>
+        </form>
+      </div>
+      <div class="card-footer muted">
+        No account yet? <a href="{% url 'signup' %}">Sign up</a>
+      </div>
+    </div>
+  </section>
 {% endblock %}

@@ -1,0 +1,56 @@
+{% extends 'base.html' %}
+
+{% block title %}Knowledge base{% endblock %}
+
+{% block content %}
+  <header class="page-header">
+    <div>
+      <h1>Knowledge base</h1>
+      <p class="muted">Answered and closed questions from every student. Search before you ask.</p>
+    </div>
+  </header>
+
+  <form method="get" class="search-bar" role="search">
+    <label for="kb-search" class="visually-hidden">Search the knowledge base</label>
+    <input type="search" id="kb-search" name="q" value="{{ query }}" placeholder="Search titles and descriptions, e.g. CSRF">
+    <button type="submit" class="btn btn-primary">Search</button>
+    {% if query %}<a href="{% url 'questions:knowledge_base' %}" class="btn btn-ghost">Clear</a>{% endif %}
+  </form>
+
+  <p class="meta">
+    {{ questions|length }} result{{ questions|length|pluralize }}{% if query %} for “{{ query }}”{% endif %}
+  </p>
+
+  {% if questions %}
+    <div class="stack">
+      {% for question in questions %}
+        <article class="card">
+          <div class="card-header">
+            <span class="badge badge-{{ question.status }}">{{ question.get_status_display }}</span>
+            <span class="tag">{{ question.subject.code }}</span>
+            <span class="muted">{{ question.subject.name }}</span>
+          </div>
+          <div class="card-body">
+            <h2><a href="{% url 'questions:detail' question.pk %}">{{ question.title }}</a></h2>
+            <p>{{ question.description|linebreaksbr }}</p>
+            <div class="qa-answer">
+              <p class="qa-answer-label">Answer</p>
+              <p>{{ question.answer|linebreaksbr }}</p>
+            </div>
+          </div>
+        </article>
+      {% endfor %}
+    </div>
+  {% else %}
+    <div class="empty-state">
+      {% if query %}
+        <h2>No results for “{{ query }}”</h2>
+        <p class="muted">Try other words, or ask the monitors directly.</p>
+      {% else %}
+        <h2>The knowledge base is empty</h2>
+        <p class="muted">Answered questions will show up here.</p>
+      {% endif %}
+      <a href="{% url 'questions:create' %}" class="btn btn-primary">Ask a question</a>
+    </div>
+  {% endif %}
+{% endblock %}
