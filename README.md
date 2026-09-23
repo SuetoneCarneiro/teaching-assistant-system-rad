@@ -8,8 +8,8 @@ Built for the extra-credit activity of **Rapid Application Development (RAD)**, 
 
 | Name | GitHub |
 |---|---|
-| Suetone Carneiro | [@SuetoneCarneiro](https://github.com/SuetoneCarneiro) |
-| Pedro Lucas _TBD: full name_ | [@pedrolucasi](https://github.com/pedrolucasi) |
+| Suetone Carneiro de Andrade Neto | [@SuetoneCarneiro](https://github.com/SuetoneCarneiro) |
+| Pedro Lucas Silva Batista | [@pedrolucasi](https://github.com/pedrolucasi) |
 
 ## Test accounts
 
