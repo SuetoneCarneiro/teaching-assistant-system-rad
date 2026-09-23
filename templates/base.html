@@ -1,0 +1,40 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>{% block title %}AskTA{% endblock %} · AskTA</title>
+  <link rel="stylesheet" href="{% static 'css/app.css' %}">
+</head>
+<body>
+  {# TODO(Pedro): real navigation + role chip (PLAN.md §7 B2). This is a placeholder. #}
+  <nav>
+    <a href="{% url 'home' %}">AskTA</a>
+    {% if user.is_authenticated %}
+      <a href="{% url 'questions:list' %}">Questions</a>
+      <a href="{% url 'questions:create' %}">Ask</a>
+      <a href="{% url 'questions:knowledge_base' %}">Knowledge base</a>
+      <form method="post" action="{% url 'logout' %}">
+        {% csrf_token %}
+        <button type="submit">Log out ({{ user.username }})</button>
+      </form>
+    {% else %}
+      <a href="{% url 'login' %}">Log in</a>
+      <a href="{% url 'signup' %}">Sign up</a>
+    {% endif %}
+  </nav>
+
+  <main class="container">
+    {% if messages %}
+      <div class="messages">
+        {% for message in messages %}
+          <div class="message message-{{ message.tags }}">{{ message }}</div>
+        {% endfor %}
+      </div>
+    {% endif %}
+
+    {% block content %}{% endblock %}
+  </main>
+</body>
+</html>
