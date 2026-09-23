@@ -1,0 +1,51 @@
+{% extends 'base.html' %}
+
+{% block title %}{{ heading }}{% endblock %}
+
+{% block content %}
+  <header class="page-header">
+    <div>
+      <h1>{{ heading }}</h1>
+      <p class="muted">{{ subheading }}</p>
+    </div>
+    <div class="page-actions">
+      <a href="{% url 'questions:create' %}" class="btn btn-primary">Ask a question</a>
+    </div>
+  </header>
+
+  {% if questions %}
+    <p class="meta">{{ questions|length }} question{{ questions|length|pluralize }}</p>
+    <ul class="card-list">
+      {% for question in questions %}
+        <li>
+          <a href="{% url 'questions:detail' question.pk %}" class="card">
+            <div class="card-header">
+              <span class="badge badge-{{ question.status }}">{{ question.get_status_display }}</span>
+              <span class="tag">{{ question.subject.code }}</span>
+            </div>
+            <div class="card-body">
+              <h2>{{ question.title }}</h2>
+              <p class="muted">{{ question.description|truncatechars:140 }}</p>
+            </div>
+            <div class="card-footer meta">
+              <span>
+                Asked by
+                {% if question.author == user %}you{% else %}{{ question.author.get_full_name|default:question.author.username }}{% endif %}
+              </span>
+              {% if question.assigned_monitor %}
+                <span>· Monitor: {% if question.assigned_monitor == user %}you{% else %}{{ question.assigned_monitor.get_full_name|default:question.assigned_monitor.username }}{% endif %}</span>
+              {% endif %}
+              <span>· Updated {{ question.updated_at|timesince }} ago</span>
+            </div>
+          </a>
+        </li>
+      {% endfor %}
+    </ul>
+  {% else %}
+    <div class="empty-state">
+      <h2>No questions yet</h2>
+      <p class="muted">When a question is opened, it will show up here.</p>
+      <a href="{% url 'questions:create' %}" class="btn btn-primary">Ask your first question</a>
+    </div>
+  {% endif %}
+{% endblock %}
