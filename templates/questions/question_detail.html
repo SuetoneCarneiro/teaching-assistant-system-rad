@@ -1,0 +1,111 @@
+{% extends 'base.html' %}
+
+{% block title %}{{ question.title }}{% endblock %}
+
+{% block content %}
+  <a href="{% url 'questions:list' %}" class="btn btn-ghost btn-sm">&larr; Back to questions</a>
+
+  <header class="page-header">
+    <div>
+      <div class="card-header">
+        <span class="badge badge-{{ question.status }}">{{ question.get_status_display }}</span>
+        <span class="tag">{{ question.subject.code }}</span>
+        <span class="muted">{{ question.subject.name }}</span>
+      </div>
+      <h1>{{ question.title }}</h1>
+      <p class="meta">
+        Asked by
+        {% if question.author == user %}you{% else %}{{ question.author.get_full_name|default:question.author.username }}{% endif %}
+        · {{ question.created_at|date:"M j, Y, H:i" }}
+        · Updated {{ question.updated_at|timesince }} ago
+      </p>
+    </div>
+  </header>
+
+  <ol class="stepper" aria-label="Question progress">
+    {% for step in steps %}
+      <li class="step {{ step.state }}"{% if step.state == 'is-current' %} aria-current="step"{% endif %}>{{ step.label }}</li>
+    {% endfor %}
+  </ol>
+
+  <div class="split">
+    <div class="stack">
+      <article class="card">
+        <div class="card-body">
+          <h2>Question</h2>
+          {{ question.description|linebreaks }}
+        </div>
+      </article>
+
+      {% if question.answer %}
+        <article class="card qa-answer">
+          <div class="card-body">
+            <h2>Answer</h2>
+            {{ question.answer|linebreaks }}
+          </div>
+          {% if question.assigned_monitor %}
+            <div class="card-footer meta">
+              Answered by
+              {% if question.assigned_monitor == user %}you{% else %}{{ question.assigned_monitor.get_full_name|default:question.assigned_monitor.username }}{% endif %}
+            </div>
+          {% endif %}
+        </article>
+      {% endif %}
+
+      {% if can_answer %}
+        <section class="card">
+          <div class="card-body">
+            <h2>{% if question.answer %}Edit your answer{% else %}Write your answer{% endif %}</h2>
+            <form method="post" action="{% url 'questions:answer' question.pk %}" class="form">
+              {% csrf_token %}
+              {{ answer_form.as_div }}
+              <button type="submit" class="btn btn-primary">
+                {% if question.answer %}Update answer{% else %}Send answer{% endif %}
+              </button>
+            </form>
+          </div>
+        </section>
+      {% endif %}
+    </div>
+
+    <aside class="card">
+      <div class="card-body stack">
+        <h2>Status</h2>
+
+        {% if question.status == 'open' %}
+          <p class="muted">Waiting for a monitor of {{ question.subject.code }} to claim this question.</p>
+        {% elif question.status == 'in_progress' %}
+          <p class="muted">
+            {% if question.assigned_monitor == user %}You are{% else %}{{ question.assigned_monitor.get_full_name|default:question.assigned_monitor.username }} is{% endif %}
+            working on an answer.
+          </p>
+        {% elif question.status == 'answered' %}
+          <p class="muted">Answered. Waiting for the author to confirm it solved the question.</p>
+        {% else %}
+          <p class="muted">Resolved and closed. It is part of the knowledge base now.</p>
+        {% endif %}
+
+        {% if can_claim %}
+          <form method="post" action="{% url 'questions:claim' question.pk %}">
+            {% csrf_token %}
+            <button type="submit" class="btn btn-primary">Claim this question</button>
+          </form>
+        {% endif %}
+
+        {% if can_close %}
+          <form method="post" action="{% url 'questions:close' question.pk %}">
+            {% csrf_token %}
+            <button type="submit" class="btn btn-success">Mark as resolved</button>
+          </form>
+        {% endif %}
+
+        {% if question.assigned_monitor %}
+          <p class="meta">
+            Monitor:
+            {% if question.assigned_monitor == user %}you{% else %}{{ question.assigned_monitor.get_full_name|default:question.assigned_monitor.username }}{% endif %}
+          </p>
+        {% endif %}
+      </div>
+    </aside>
+  </div>
+{% endblock %}

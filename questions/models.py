@@ -1,6 +1,7 @@
 from django.conf import settings
 from django.db import models
 from django.db.models import Q
+from django.urls import reverse
 
 
 class Subject(models.Model):
@@ -102,6 +103,9 @@ class Question(models.Model):
 
     def __str__(self):
         return self.title
+
+    def get_absolute_url(self):
+        return reverse('questions:detail', args=[self.pk])
 
     # Business rules. The views use them to protect the routes (RF5-RF7) and
     # the templates use them to show or hide the buttons (RF9). A closed
