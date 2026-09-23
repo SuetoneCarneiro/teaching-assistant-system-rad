@@ -10,16 +10,79 @@
     </div>
   </header>
 
-  <div class="card form-card">
-    <div class="card-body">
-      <form method="post" class="form">
-        {% csrf_token %}
-        {{ form.as_div }}
-        <div class="form-actions">
-          <a href="{% url 'questions:list' %}" class="btn btn-ghost">Cancel</a>
-          <button type="submit" class="btn btn-primary">Open question</button>
-        </div>
-      </form>
+  <div class="split">
+    <div class="card">
+      <div class="card-body">
+        <form method="post" class="form">
+          {% csrf_token %}
+          {{ form.as_div }}
+          <div class="form-actions">
+            <a href="{% url 'questions:list' %}" class="btn btn-ghost">Cancel</a>
+            <button type="submit" class="btn btn-primary">Open question</button>
+          </div>
+        </form>
+      </div>
     </div>
+
+    <aside class="card" id="office-hours">
+      <div class="card-body">
+        <h2>Office hours</h2>
+        <p class="muted" data-office-hours-hint {% if selected_subject %}hidden{% endif %}>
+          Choose a subject to see when its monitors are available.
+        </p>
+
+        {% for subject, slots in office_hours %}
+          {% with subject_pk=subject.pk|stringformat:"s" %}
+            <div data-office-hours="{{ subject.pk }}" {% if subject_pk != selected_subject %}hidden{% endif %}>
+              <p><span class="tag">{{ subject.code }}</span></p>
+              <ul class="slot-list">
+                {% for slot in slots %}
+                  <li class="slot">
+                    <span class="slot-day">{{ slot.get_weekday_display }}</span>
+                    <span class="slot-time">{{ slot.start_time|time:"H:i" }}–{{ slot.end_time|time:"H:i" }}</span>
+                    <span class="muted">{{ slot.monitor.get_full_name|default:slot.monitor.username }}</span>
+                  </li>
+                {% endfor %}
+              </ul>
+            </div>
+          {% endwith %}
+        {% endfor %}
+
+        <p class="muted" data-office-hours-empty {% if not selected_subject or selected_has_slots %}hidden{% endif %}>No office hours for this subject yet.</p>
+
+        {% if office_hours %}
+          <p class="meta">
+            See:
+            {% for subject, slots in office_hours %}
+              <a href="?subject={{ subject.pk }}#office-hours">{{ subject.code }}</a>{% if not forloop.last %} ·{% endif %}
+            {% endfor %}
+          </p>
+        {% endif %}
+      </div>
+    </aside>
   </div>
+
+  <script>
+    (function () {
+      var select = document.getElementById('id_subject');
+      if (!select) return;
+      var groups = document.querySelectorAll('[data-office-hours]');
+      var hint = document.querySelector('[data-office-hours-hint]');
+      var empty = document.querySelector('[data-office-hours-empty]');
+
+      function show() {
+        var found = false;
+        groups.forEach(function (group) {
+          var match = group.dataset.officeHours === select.value;
+          group.hidden = !match;
+          found = found || match;
+        });
+        hint.hidden = select.value !== '';
+        empty.hidden = select.value === '' || found;
+      }
+
+      select.addEventListener('change', show);
+      show();
+    })();
+  </script>
 {% endblock %}

@@ -56,7 +56,7 @@ The database ships with questions in every status, so each requirement can be ch
 | RF7: Close | Done |
 | RF8: Knowledge base | Done |
 | RF9: The interface reflects the role | Done |
-| Optional challenge: office hours | _TBD_ |
+| Optional challenge: office hours | Done |
 
 **Unfinished requirements:** none.
 
@@ -89,6 +89,7 @@ python manage.py seed_demo
 | `/questions/new/` | Open a question (RF3) | Any logged-in user |
 | `/questions/<id>/` | Question detail with the actions (RF5–RF7, RF9) | Author, monitors of the subject, professors. Answered/closed questions are readable by everyone |
 | `/questions/knowledge/` | Knowledge base with search (RF8) | Any logged-in user |
+| `/schedules/` | My office hours: list and add slots (optional challenge) | Monitors only. Everyone else gets 403 |
 | `/accounts/signup/` | Public signup (RF2) | Anyone |
 | `/admin/` | Django Admin (RF1) | Staff |
 
@@ -158,6 +159,21 @@ No password is ever assigned to the model field. Users are created with `create_
 
 The `seed_demo` management command builds the groups, permissions, accounts, subjects, monitor links and questions above. It's safe to run more than once. We used it so both of us had identical local databases while developing, and so `db.sqlite3` only had to be committed once, at the end. All of this data can also be viewed and edited in the Admin.
 
+### Optional challenge: office hours
+
+Monitors register weekly slots when they are available (`schedules` app, model `OfficeHour`: monitor, subject, weekday, start and end time). It lives in its own app, with its own migrations.
+
+- **Where:** `/schedules/` (link "Office hours" in the menu, shown only to monitors). The page lists the monitor's slots and has a form to add one. `LoginRequiredMixin` + `UserPassesTestMixin` (`user.monitored_subjects.exists()`): anyone who isn't a monitor gets 403.
+- **Rules, in `OfficeHour.clean()`** (so the form and the Admin both enforce them):
+  1. The end time must be after the start time.
+  2. A monitor can only add slots for subjects they monitor. The form's dropdown already lists only those subjects, and `clean()` checks again, so a forged POST fails too.
+  3. **No overlapping slots** for the same monitor on the same day. This is a database query: two slots overlap when each one starts before the other ends,
+     `OfficeHour.objects.filter(monitor=..., weekday=..., start_time__lt=new_end, end_time__gt=new_start).exclude(pk=self.pk).exists()`.
+     Touching slots (09:00–10:00 and 10:00–11:00) are allowed. The view sets `monitor = request.user` **before** validation, so `clean()` can run this query.
+- **Question page:** when a student picks a subject on `/questions/new/`, a card shows that subject's office hours. A few lines of plain JavaScript switch the card when the dropdown changes, without reloading (so nothing typed is lost). Without JavaScript, `?subject=<id>` shows the same card.
+- **Test data:** `monitor_carla` has two slots in RAD101 (Monday 09:00–10:00, Wednesday 14:00–16:00).
+- **Automated tests:** `python manage.py test schedules` covers overlap, adjacent slots, own subjects only, the 403 for non-monitors and the card on the question page.
+
 ### Why `db.sqlite3` is in the repository
 
 Only for this delivery: without the subjects, the monitor links and questions in different statuses, the requirements can't be checked. In a real project the database stays out of version control. The `.venv` folder is never committed.
@@ -177,6 +193,7 @@ questions/
   forms.py         QuestionForm (RF3), AnswerForm (RF6)
   views/           one module per feature: listing, create, detail, actions, knowledge
   management/      seed_demo command
+schedules/         optional challenge: OfficeHour model, rules, page and tests
 templates/         base layout, auth pages and question pages
 static/css/app.css design system
 ```

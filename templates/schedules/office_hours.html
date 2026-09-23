@@ -1,0 +1,44 @@
+{% extends 'base.html' %}
+
+{% block title %}Office hours{% endblock %}
+
+{% block content %}
+  <header class="page-header">
+    <div>
+      <h1>My office hours</h1>
+      <p class="muted">Students see these slots when they ask a question in your subjects.</p>
+    </div>
+  </header>
+
+  <div class="split">
+    <section class="card">
+      <div class="card-body">
+        <h2>Weekly slots</h2>
+        {% if office_hours %}
+          <ul class="slot-list">
+            {% for slot in office_hours %}
+              <li class="slot">
+                <span class="slot-day">{{ slot.get_weekday_display }}</span>
+                <span class="slot-time">{{ slot.start_time|time:"H:i" }}–{{ slot.end_time|time:"H:i" }}</span>
+                <span class="tag">{{ slot.subject.code }}</span>
+              </li>
+            {% endfor %}
+          </ul>
+        {% else %}
+          <p class="muted">You haven't added any office hours yet.</p>
+        {% endif %}
+      </div>
+    </section>
+
+    <aside class="card">
+      <div class="card-body">
+        <h2>Add a slot</h2>
+        <form method="post" class="form">
+          {% csrf_token %}
+          {{ form.as_div }}
+          <button type="submit" class="btn btn-primary">Add office hour</button>
+        </form>
+      </div>
+    </aside>
+  </div>
+{% endblock %}

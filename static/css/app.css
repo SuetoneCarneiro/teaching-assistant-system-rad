@@ -130,6 +130,8 @@ a:hover { text-decoration: underline; }
 
 code { font-family: var(--font-mono); font-size: 0.9em; }
 
+[hidden] { display: none !important; }
+
 .visually-hidden {
   position: absolute !important;
   width: 1px; height: 1px;
@@ -154,6 +156,7 @@ code { font-family: var(--font-mono); font-size: 0.9em; }
   margin-bottom: var(--space-5);
 }
 .page-header p { margin: 0; }
+.page-header .card-header { padding: 0; margin-bottom: var(--space-3); }
 
 .page-actions {
   display: flex;
@@ -477,6 +480,16 @@ code { font-family: var(--font-mono); font-size: 0.9em; }
   background: var(--status-answered-bg);
   border-radius: 0 var(--radius-sm) var(--radius-sm) 0;
 }
+/* Answer shown as a whole card (detail page) instead of a block inside one. */
+.card.qa-answer {
+  margin-top: 0;
+  padding: 0;
+  border: 1px solid var(--border);
+  border-left: 4px solid var(--status-answered);
+  border-radius: var(--radius);
+}
+.card.qa-answer .card-footer { background: transparent; border-top-color: color-mix(in srgb, var(--status-answered) 25%, transparent); }
+
 .qa-answer-label {
   font-size: 0.75rem;
   font-weight: 700;
@@ -485,6 +498,29 @@ code { font-family: var(--font-mono); font-size: 0.9em; }
   color: var(--status-answered);
   margin-bottom: var(--space-1);
 }
+
+/* Office hours */
+.slot-list {
+  list-style: none;
+  margin: var(--space-2) 0 var(--space-3);
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2);
+}
+.slot {
+  display: flex;
+  align-items: center;
+  gap: var(--space-3);
+  flex-wrap: wrap;
+  padding: var(--space-2) var(--space-3);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+  background: var(--surface-muted);
+}
+.slot-day { font-weight: 600; min-width: 6.5rem; }
+.slot-time { font-family: var(--font-mono); font-size: 0.9rem; }
+.slot .tag, .slot .muted { margin-left: auto; }
 
 /* Status stepper: Open -> In progress -> Answered -> Closed */
 .stepper {

@@ -4,11 +4,14 @@ Safe to run more than once: existing rows are reused, never duplicated.
 Passwords always go through create_user / create_superuser (hashed).
 """
 
+from datetime import time
+
 from django.contrib.auth.models import Group, Permission, User
 from django.core.management.base import BaseCommand
 
 from accounts.roles import PROFESSORS_GROUP, STUDENTS_GROUP
 from questions.models import Question, Subject
+from schedules.models import OfficeHour
 
 PASSWORD = 'Monitoria@2026'
 
@@ -110,6 +113,19 @@ class Command(BaseCommand):
                     'description': description,
                     'answer': answer,
                 },
+            )
+
+        # Optional challenge (schedules app): two office hours for Carla in RAD101.
+        for weekday, start, end in [
+            (OfficeHour.Weekday.MONDAY, time(9), time(10)),
+            (OfficeHour.Weekday.WEDNESDAY, time(14), time(16)),
+        ]:
+            OfficeHour.objects.get_or_create(
+                monitor=users['monitor_carla'],
+                subject=subjects['RAD101'],
+                weekday=weekday,
+                start_time=start,
+                end_time=end,
             )
 
         self.stdout.write(self.style.SUCCESS(

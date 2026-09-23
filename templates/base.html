@@ -18,6 +18,9 @@
           <li><a href="{% url 'questions:list' %}" {% if current == 'list' or current == 'detail' %}class="is-active" aria-current="page"{% endif %}>Questions</a></li>
           <li><a href="{% url 'questions:create' %}" {% if current == 'create' %}class="is-active" aria-current="page"{% endif %}>Ask</a></li>
           <li><a href="{% url 'questions:knowledge_base' %}" {% if current == 'knowledge_base' %}class="is-active" aria-current="page"{% endif %}>Knowledge base</a></li>
+          {% if user.monitored_subjects.exists %}
+            <li><a href="{% url 'schedules:mine' %}" {% if current == 'mine' %}class="is-active" aria-current="page"{% endif %}>Office hours</a></li>
+          {% endif %}
         </ul>
 
         <div class="nav-user">

@@ -7,5 +7,6 @@ urlpatterns = [
     path('accounts/', include('django.contrib.auth.urls')),
     path('accounts/', include('accounts.urls')),
     path('questions/', include('questions.urls')),
+    path('schedules/', include('schedules.urls')),
     path('', RedirectView.as_view(pattern_name='questions:list'), name='home'),
 ]
