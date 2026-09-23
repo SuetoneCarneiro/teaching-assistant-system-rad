@@ -34,7 +34,7 @@ This file is the contract between the two of us. If you're about to break someth
 ## 1. Ground rules from the spec
 
 - **150 minutes, no finishing at home.** Only this plan is written before class. All code is written in class.
-- **AI assistants are allowed**, but **both of us must be able to explain any line** of the delivery. Code we can't explain earns no points. → every PR gets a quick review by the other person (see §9).
+- **AI assistants are allowed**, but **both of us must be able to explain any line** of the delivery. Code we can't explain earns no points. → after every meaningful push, the author explains it to the other person (see §9).
 - **One public GitHub repo, commits from both members.** The history will be checked.
 - **Priority rule from the spec:** if we're behind at the halfway point, **RF4 (the three list views) comes first**. It's the requirement that counts most.
 - **Never test only with the superuser.** It passes every permission check.
@@ -61,7 +61,7 @@ This file is the contract between the two of us. If you're about to break someth
 | **Roles** | **Hybrid.** *Student* = group `Students`. *Professor* = group `Professors`, which holds the custom permission `questions.view_all_questions`. *Monitor* = **derived** from `Subject.monitors` (no group) | Being a monitor is **per subject**, which the spec needs anyway (RF5). Deriving it means the role can never get out of sync with the data |
 | **Monitor's list** | Questions from monitored subjects **plus the ones the monitor opened**, still in **one query** | A monitor is usually also a student, and RF3 lets any authenticated user ask. Without this, a monitor's own questions in other subjects would disappear. We'll justify this in the README |
 | Styling | Hand-written CSS design system, light + dark mode | T6 compliance. Also looks more distinctive than stock Bootstrap |
-| Optional challenge | Planned as the **last** track, merged only after the acceptance checklist is 22/22 green | It only scores if everything else works |
+| Optional challenge | Planned as the **last** track, pushed only after the acceptance checklist is 22/22 green | It only scores if everything else works |
 | Test data | A `seed_demo` management command builds the demo data. The final `db.sqlite3` is produced from it once, at the end | Both of us get identical local DBs, and there are no binary merge conflicts on `db.sqlite3` (see §9) |
 | DEBUG | Stays `True` in the delivered repo | The grader runs `runserver` locally, and static files are only served with `DEBUG=True` |
 | Timezone / language | `TIME_ZONE = "America/Fortaleza"` (covers Paraíba), `LANGUAGE_CODE = "en-us"` | The UI is in English |
@@ -133,13 +133,13 @@ teaching-assistant-system-rad/
 └── db.sqlite3                                 S    committed ONCE, in the final release step
 ```
 
-**Why a `views/` package instead of one `views.py`?** Each person owns whole files, so parallel branches merge without conflicts. `__init__.py` re-exports everything, so `urls.py` stays unchanged.
+**Why a `views/` package instead of one `views.py`?** Each person owns whole files, so parallel pushes to `main` rebase without conflicts. `__init__.py` re-exports everything, so `urls.py` stays unchanged.
 
 ---
 
 ## 5. Contracts (write these first, then work in parallel)
 
-Once these are merged (end of **P0** and **Track A**), every other track can be built without waiting for anyone.
+Once these are pushed (end of **P0** and **Track A**), every other track can be built without waiting for anyone.
 
 ### 5.1 Models (`questions/models.py`, owner S)
 
@@ -294,8 +294,8 @@ flowchart LR
 | **E** RF3 create | A | C, D, F | Uses `Subject.objects.filter(is_active=True)` |
 | **F** RF8 knowledge base | A | C, D, E | Uses `Question.objects.knowledge_base()` |
 | **G** Acceptance run | C, D, E, F, B2 | — | Integration point |
-| **H** Office hours | A, E, and **G green** before merge | can be *coded* during G on a branch | Own app, own migrations, so no migration conflicts with `questions` |
-| **R** Release | G (+ H if merged) | — | Only S commits `db.sqlite3` |
+| **H** Office hours | A, E, and **G green** before pushing | can be *coded* locally during G | Own app, own migrations, so no migration conflicts with `questions` |
+| **R** Release | G (+ H if pushed) | — | Only S commits `db.sqlite3` |
 
 **Soft dependency:** C/D/E/F depend on B2 only for how they *look*. The UI contract (§5.5) removes that dependency during development.
 
@@ -305,7 +305,7 @@ flowchart LR
 
 ### Pre-class (setup only, no project code)
 - [ ] S: add Pedro as a collaborator on the GitHub repo.
-- [ ] Both: clone, check `python --version` ≥ 3.12, and confirm you can push a branch.
+- [ ] Both: clone, check `python --version` ≥ 3.12, and confirm you can push to `main`.
 - [ ] Both: read this plan end to end. Each of us should be able to explain §5 without looking.
 
 ### P0 · Bootstrap + contracts — **S**, T+0 → T+10
@@ -325,7 +325,7 @@ flowchart LR
   - `SubjectAdmin`: `list_display = (code, name, is_active, monitor_count)`, `list_filter = (is_active,)`, `search_fields = (code, name)`, **`filter_horizontal = ("monitors",)`**, so the monitor↔subject link is editable
   - `QuestionAdmin`: `list_display = (title, subject, author, assigned_monitor, status, created_at, updated_at)`, `list_filter = (status, subject)`, `search_fields = (title, description, author__username)`, `readonly_fields = (created_at, updated_at)`, `date_hierarchy = "created_at"`
 - [ ] `seed_demo` command (§11), idempotent. Creates groups, assigns `view_all_questions` to `Professors`, users via `create_user`/`create_superuser`, subjects, M2M links, and questions in every status
-- [ ] PR → Pedro reviews → merge. **Tell Pedro that A is on `main`.**
+- [ ] Push to `main` → explain it to Pedro. **Tell him A is on `main` so he can pull and migrate.**
 
 ### B1 · CSS design system — **P**, T+0 → T+20
 - [ ] `static/css/app.css`: tokens (`:root` colors, spacing, radius, shadow), dark mode through `prefers-color-scheme`, and every class in §5.5
@@ -373,9 +373,9 @@ flowchart LR
 ### G · Acceptance run — **both**, T+100 → T+120
 - [ ] `rm db.sqlite3 && migrate && seed_demo` on a **fresh** DB
 - [ ] Cross-test: **S runs Pedro's features, P runs Suetone's** (§12). This is also how each of us learns the other's code
-- [ ] Log every failure as a checkbox in the PR/issue, fix, re-run
+- [ ] Write every failure down (paper or a shared note), fix it, re-run it
 
-### H · Office hours (optional) — **P**, coded T+85 → T+130 on a branch, merged only if G = 22/22
+### H · Office hours (optional) — **P**, coded T+85 → T+130 locally, pushed only if G = 22/22
 See §14.
 
 ### R · Release — **S**, T+130 → T+145
@@ -396,16 +396,16 @@ gantt
     C RF4 three list views        :crit, s2, after s1, 25m
     D Detail + claim/answer/close :s3, after s2, 35m
     G Acceptance (tests P's work) :s4, after s3, 20m
-    Review H + README credentials :s5, after s4, 10m
+    Check H + README credentials :s5, after s4, 10m
     R Release                     :crit, s6, after s5, 15m
     section Pedro
     B1 CSS design system          :p1, 00:00, 20m
     B2 Base, nav, auth, signup    :p2, after p1, 25m
     E RF3 open question           :p3, after p2, 25m
     F RF8 knowledge base          :p4, after p3, 15m
-    H Office hours (branch)       :p5, after p4, 15m
+    H Office hours (local)       :p5, after p4, 15m
     G Acceptance (tests S's work) :p6, 01:40, 20m
-    H finish + merge if 22/22     :p7, after p6, 10m
+    H finish + push if 22/22     :p7, after p6, 10m
 ```
 
 ### Checkpoints (say these out loud)
@@ -413,8 +413,8 @@ gantt
 |---|---|---|
 | **T+10** | P0 on `main`, both run the server | S keeps going, P keeps doing CSS. Nobody waits |
 | **T+40** | Track A on `main`, migrations applied, seed runs | P builds E against the §5.1 contract and runs it once A lands |
-| **T+75** (halfway) | **RF4 merged and verified with the 4 non-admin accounts** | **P pauses F and pairs with S on RF4.** Spec priority |
-| **T+100** | C, D, E, F all merged | Cut list: H → KB polish → UI polish. Never cut RF4–RF7 |
+| **T+75** (halfway) | **RF4 pushed and verified with the 4 non-admin accounts** | **P pauses F and pairs with S on RF4.** Spec priority |
+| **T+100** | C, D, E, F all pushed | Cut list: H → KB polish → UI polish. Never cut RF4–RF7 |
 | **T+120** | Checklist 22/22 | Fix only. No new features |
 | **T+140** | **Code freeze.** Only `db.sqlite3` + README after this | — |
 | **T+145** | Both open the GitHub repo in the browser and confirm the final commit is there | — |
@@ -423,14 +423,15 @@ gantt
 
 ## 9. Git workflow
 
-1. **Branches:** `main` must always run. Work on `feat/<track>` branches, e.g. `feat/models-admin`, `feat/design-system`, `feat/rf4-list`.
-2. **Small PRs, merged fast.** Aim for 1–2 PRs per track. Use **"Create a merge commit" or "Rebase and merge"**, never squash, so both of our commit histories stay visible (the spec checks this).
-3. **2-minute review rule:** the other person reads the PR and asks **one question** about it before approving. This is how we both end up able to explain everything.
-4. **Stay in sync:** `git pull --rebase origin main` before starting a new track and before opening a PR.
-5. **Migrations:** only **S** runs `makemigrations` for `questions`, and only **P** for `schedules`. Need a model change in `questions`? Ask S. Two people generating `0002_*.py` at the same time causes a migration conflict.
-6. **`db.sqlite3` stays git-ignored until release.** It's binary, so conflicts can't be merged. Everyone rebuilds locally with `migrate && seed_demo`.
-7. **`.venv/` is never committed.** (Already in `.gitignore`.)
-8. Commit messages: `feat(questions): add visibility queryset`, `fix(kb): hide open questions`, `style: status badges`, `docs: readme credentials`.
+1. **No branches, no PRs.** We both commit and push **directly to `main`** (we're side by side in class, so we coordinate by talking). `main` must always run: only push code where `python manage.py runserver` still starts.
+2. **Small commits, pushed often:** one logical step per commit, pushed right away, so the other person gets it early and conflicts stay tiny. Both of our names end up in the history (the spec checks this).
+3. **"Explain your push" rule:** after pushing something meaningful, turn to your partner and explain it in under 2 minutes. They ask **one question**. This is how we both end up able to explain everything.
+4. **Stay in sync:** always `git pull --rebase origin main` **before every push**. If the rebase stops on a conflict, fix it together, then `git rebase --continue`.
+5. **Announce shared-file edits out loud** before touching them: `config/settings.py`, `config/urls.py`, `questions/urls.py`, `questions/forms.py`, `base.html`.
+6. **Migrations:** only **S** runs `makemigrations` for `questions`, and only **P** for `schedules`. Need a model change in `questions`? Ask S. Two people generating `0002_*.py` at the same time causes a migration conflict.
+7. **`db.sqlite3` stays git-ignored until release.** It's binary, so conflicts can't be merged. Everyone rebuilds locally with `migrate && seed_demo`.
+8. **`.venv/` is never committed.** (Already in `.gitignore`.)
+9. Commit messages: `feat(questions): add visibility queryset`, `fix(kb): hide open questions`, `style: status badges`, `docs: readme credentials`.
 
 ---
 
@@ -543,7 +544,7 @@ The goal is a UI that's pretty and actually usable. No libraries, just one well-
 
 ## 14. Optional challenge: office hours (+0.5)
 
-Scores **only if every required feature works**. Build it on `feat/office-hours` during T+85 → T+130 and merge only after G is 22/22 green. It lives in its own `schedules` app, so it never touches `questions` migrations.
+Scores **only if every required feature works**. Build it locally during T+85 → T+130, **committing but not pushing** until G is 22/22 green, then push. It lives in its own `schedules` app, so it never touches `questions` migrations.
 
 ```python
 class OfficeHour(models.Model):
