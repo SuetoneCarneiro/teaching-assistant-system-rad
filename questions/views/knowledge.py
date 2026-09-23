@@ -12,7 +12,7 @@ def knowledge_base(request):
     questions = Question.objects.knowledge_base().select_related('subject')
     if query:
         questions = questions.filter(
-            Q(title__icontains=query) | Q(description__icontains=query)
+            Q(title__icontains=query) | Q(description__icontains=query) | Q(subject__code__icontains=query)
         )
     return render(request, 'questions/knowledge_base.html', {
         'questions': questions,
